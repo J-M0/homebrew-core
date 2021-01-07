@@ -10,6 +10,16 @@ class AutoconfArchive < Formula
     url :stable
   end
 
+  head do
+    url "https://git.savannah.gnu.org/git/autoconf-archive.git"
+    depends_on "automake"
+
+    patch do
+      url "https://savannah.gnu.org/patch/download.php?file_id=50250"
+      sha256 "dd05b9dad0b18e8a92d14e7ab9af434fb44b7130a19d98c666e661b0542538d1"
+    end
+  end
+
   bottle do
     cellar :any_skip_relocation
     rebuild 1
@@ -26,7 +36,9 @@ class AutoconfArchive < Formula
   conflicts_with "gnome-common", because: "both install ax_check_enable_debug.m4 and ax_code_coverage.m4"
 
   def install
+    system "./bootstrap.sh", "--copy" if build.head?
     system "./configure", "--prefix=#{prefix}"
+    system "make", "maintainer-all" if build.head?
     system "make", "install"
   end
 
