@@ -5,11 +5,13 @@ class VagrantCompletion < Formula
   sha256 "bec6fb4458d3f65e0de81cf022f54b711b40e27fdcf23936d01e9150c932849b"
   license "MIT"
   head "https://github.com/hashicorp/vagrant.git"
+  revision 1
 
   bottle :unneeded
 
   def install
     bash_completion.install "contrib/bash/completion.sh" => "vagrant"
+    zsh_completion.install "contrib/zsh/_vagrant" => "_vagrant"
   end
 
   test do
