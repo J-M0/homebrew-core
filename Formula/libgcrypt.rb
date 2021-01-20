@@ -20,6 +20,11 @@ class Libgcrypt < Formula
 
   depends_on "libgpg-error"
 
+  # Upstream patches to fix basic test failing
+  # https://lists.gnupg.org/pipermail/gcrypt-devel/2021-January/005040.html
+  # https://lists.gnupg.org/pipermail/gcrypt-devel/2021-January/005039.html
+  patch :DATA
+
   def install
     system "./configure", "--disable-dependency-tracking",
                           "--disable-silent-rules",
@@ -55,3 +60,28 @@ class Libgcrypt < Formula
     assert_match "0e824ce7c056c82ba63cc40cffa60d3195b5bb5feccc999a47724cc19211aef6", output
   end
 end
+
+__END__
+diff --git a/cipher/kdf.c b/cipher/kdf.c
+index 3d707bd..93c2c9f 100644
+--- a/cipher/kdf.c
++++ b/cipher/kdf.c
+@@ -342,7 +342,7 @@ check_one (int algo, int hash_algo,
+ static gpg_err_code_t
+ selftest_pbkdf2 (int extended, selftest_report_func_t report)
+ {
+-  static struct {
++  static const struct {
+     const char *desc;
+     const char *p;   /* Passphrase.  */
+     size_t plen;     /* Length of P. */
+@@ -452,7 +452,8 @@ selftest_pbkdf2 (int extended, selftest_report_func_t report)
+       "\x34\x8c\x89\xdb\xcb\xd3\x2b\x2f\x32\xd8\x14\xb8\x11\x6e\x84\xcf"
+       "\x2b\x17\x34\x7e\xbc\x18\x00\x18\x1c\x4e\x2a\x1f\xb8\xdd\x53\xe1"
+       "\xc6\x35\x51\x8c\x7d\xac\x47\xe9"
+-    }
++    },
++    { NULL }
+   };
+   const char *what;
+   const char *errtxt;
