@@ -23,7 +23,7 @@ class PythonAT37 < Formula
   # build packages later. Xcode-only systems need different flags.
   pour_bottle? only_if: :clt_installed
 
-  keg_only :versioned_formula
+  # keg_only :versioned_formula
 
   depends_on "pkg-config" => :build
   depends_on arch: :x86_64
@@ -200,7 +200,7 @@ class PythonAT37 < Formula
 
     ENV.deparallelize do
       # Tell Python not to install into /Applications (default for framework builds)
-      system "make", "install", "PYTHONAPPSDIR=#{prefix}"
+      system "make", "altinstall", "PYTHONAPPSDIR=#{prefix}"
       system "make", "frameworkinstallextras", "PYTHONAPPSDIR=#{pkgshare}" if OS.mac?
     end
 
@@ -247,14 +247,19 @@ class PythonAT37 < Formula
     rm_r libexec/"wheel/tests"
 
     # Install unversioned symlinks in libexec/bin.
-    {
-      "idle"          => "idle3",
-      "pydoc"         => "pydoc3",
-      "python"        => "python3",
-      "python-config" => "python3-config",
-    }.each do |unversioned_name, versioned_name|
-      (libexec/"bin").install_symlink (bin/versioned_name).realpath => unversioned_name
-    end
+    # {
+    #   "idle"          => "idle3",
+    #   "pydoc"         => "pydoc3",
+    #   "python"        => "python3",
+    #   "python-config" => "python3-config",
+    # }.each do |unversioned_name, versioned_name|
+    #   (libexec/"bin").install_symlink (bin/versioned_name).realpath => unversioned_name
+    # end
+
+    rm frameworks/"Python.framework/Headers"
+    rm frameworks/"Python.framework/Python"
+    rm frameworks/"Python.framework/Resources"
+    rm frameworks/"Python.framework/Versions/Current"
   end
 
   def post_install
@@ -284,7 +289,7 @@ class PythonAT37 < Formula
 
     %w[setuptools pip wheel importlib-metadata zipp].each do |pkg|
       (libexec/pkg).cd do
-        system bin/"python3", "-s", "setup.py", "--no-user-cfg", "install",
+        system bin/"python#{version.major_minor}", "-s", "setup.py", "--no-user-cfg", "install",
                "--force", "--verbose", "--install-scripts=#{bin}",
                "--install-lib=#{site_packages}",
                "--single-version-externally-managed",
@@ -364,14 +369,10 @@ class PythonAT37 < Formula
   def caveats
     <<~EOS
       Python has been installed as
-        #{opt_bin}/python3
-
-      Unversioned symlinks `python`, `python-config`, `pip` etc. pointing to
-      `python3`, `python3-config`, `pip3` etc., respectively, have been installed into
-        #{opt_libexec}/bin
+        #{opt_bin}/python#{version.major_minor}
 
       You can install Python packages with
-        #{opt_bin}/pip3 install <package>
+        #{opt_bin}/pip#{version.major_minor} install <package>
       They will install into the site-package directory
         #{HOMEBREW_PREFIX/"lib/python#{version.major_minor}/site-packages"}
 
